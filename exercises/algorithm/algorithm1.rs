@@ -2,11 +2,10 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -16,12 +15,10 @@ struct Node<T> {
 
 impl<T> Node<T> {
     fn new(t: T) -> Node<T> {
-        Node {
-            val: t,
-            next: None,
-        }
+        Node { val: t, next: None }
     }
 }
+
 #[derive(Debug)]
 struct LinkedList<T> {
     length: u32,
@@ -31,19 +28,15 @@ struct LinkedList<T> {
 
 impl<T> Default for LinkedList<T> {
     fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<T> LinkedList<T> {
-    pub fn new() -> Self {
         Self {
             length: 0,
             start: None,
             end: None,
         }
     }
+}
 
+impl<T> LinkedList<T> {
     pub fn add(&mut self, obj: T) {
         let mut node = Box::new(Node::new(obj));
         node.next = None;
@@ -69,15 +62,56 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
+}
+
+impl<T: Ord> LinkedList<T> {
+    pub fn new() -> Self {
+        Self {
             length: 0,
             start: None,
             end: None,
         }
-	}
+    }
+
+    pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self {
+        let mut result = LinkedList::new();
+
+        let mut ptr_a = list_a.start.take();
+        let mut ptr_b = list_b.start.take();
+
+        while ptr_a.is_some() || ptr_b.is_some() {
+            let val = unsafe {
+                match (ptr_a, ptr_b) {
+                    (Some(a), Some(b)) => {
+                        let a_ref = a.as_ref();
+                        let b_ref = b.as_ref();
+                        if a_ref.val <= b_ref.val {
+                            ptr_a = a_ref.next;
+                            std::ptr::read(&a_ref.val)
+                        } else {
+                            ptr_b = b_ref.next;
+                            std::ptr::read(&b_ref.val)
+                        }
+                    }
+                    (Some(a), None) => {
+                        let a_ref = a.as_ref();
+                        ptr_a = a_ref.next;
+                        std::ptr::read(&a_ref.val)
+                    }
+                    (None, Some(b)) => {
+                        let b_ref = b.as_ref();
+                        ptr_b = b_ref.next;
+                        std::ptr::read(&b_ref.val)
+                    }
+                    (None, None) => break,
+                }
+            };
+
+            result.add(val);
+        }
+
+        result
+    }
 }
 
 impl<T> Display for LinkedList<T>

@@ -1,8 +1,7 @@
 /*
-	heap
-	This question requires you to implement a binary heap function
+    heap
+    This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -23,7 +22,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: vec![T::default()], // Index 0 is unused for easier calculations
             comparator,
         }
     }
@@ -37,28 +36,61 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.bubble_up(self.count);
     }
 
-    fn parent_idx(&self, idx: usize) -> usize {
+    pub fn pop(&mut self) -> Option<T> {
+        if self.is_empty() {
+            return None;
+        }
+        self.items.swap(1, self.count); // Swap root with the last element
+        let result = self.items.pop(); // Remove the last element (former root)
+        self.count -= 1;
+        self.bubble_down(1); // Restore heap property
+        result
+    }
+
+    fn parent_idx(idx: usize) -> usize {
         idx / 2
     }
 
-    fn children_present(&self, idx: usize) -> bool {
-        self.left_child_idx(idx) <= self.count
-    }
-
-    fn left_child_idx(&self, idx: usize) -> usize {
+    fn left_child_idx(idx: usize) -> usize {
         idx * 2
     }
 
-    fn right_child_idx(&self, idx: usize) -> usize {
-        self.left_child_idx(idx) + 1
+    fn right_child_idx(idx: usize) -> usize {
+        idx * 2 + 1
     }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+    fn bubble_up(&mut self, mut idx: usize) {
+        while idx > 1 {
+            let parent_idx = Self::parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[parent_idx]) {
+                self.items.swap(idx, parent_idx);
+                idx = parent_idx;
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn bubble_down(&mut self, mut idx: usize) {
+        while Self::left_child_idx(idx) <= self.count {
+            let mut child_idx = Self::left_child_idx(idx);
+            if child_idx + 1 <= self.count
+                && (self.comparator)(&self.items[child_idx + 1], &self.items[child_idx])
+            {
+                child_idx += 1;
+            }
+            if (self.comparator)(&self.items[child_idx], &self.items[idx]) {
+                self.items.swap(idx, child_idx);
+            } else {
+                break;
+            }
+            idx = child_idx;
+        }
     }
 }
 
@@ -84,8 +116,7 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        self.pop()
     }
 }
 
